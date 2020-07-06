@@ -45,7 +45,7 @@ class IndexController extends Controller
 
         //3.通过code换取网页授权access_token
         $curl = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxff7d69201c42b292&secret=e501916d34a9d52e7556acf00ba704d4&code='.$code.'&grant_type=authorization_code';
-        $content = $this->doHttpPost($curl);
+        $content = $this->httpGet($curl);
         $result = json_decode($content);
 
         //4.通过access_token和openid拉取用户信息
@@ -53,11 +53,12 @@ class IndexController extends Controller
         $openid = $result->openid;
         $userInfourl = 'https://api.weixin.qq.com/sns/userinfo?access_token='.$webAccess_token.'&openid='.$openid.'&lang=zh_CN ';
 
-        $recontent = $this->doHttpPost($userInfourl);
+        $recontent = $this->httpGet($userInfourl);
         $userInfo = json_decode($recontent,true);
         return $userInfo;
 
     }
+
 
     public function auth(Request $request)
     {
