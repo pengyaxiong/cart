@@ -35,6 +35,8 @@ class IndexController extends Controller
         //1.准备scope为snsapi_login网页授权页面
         $redirecturl = urlencode("https://cart.leanzn.com/wechat/code_login");
         $snsapi_userInfo_url = 'https://open.weixin.qq.com/connect/qrconnect?appid=wxff7d69201c42b292&redirect_uri='.$redirecturl.'&response_type=code&scope=snsapi_login&state=YQJ#wechat_redirect';
+
+        return $snsapi_userInfo_url;
         //2.用户手动同意授权,同意之后,获取code
         //页面跳转至redirect_uri/?code=CODE&state=STATE
         $code = $_GET['code'];
