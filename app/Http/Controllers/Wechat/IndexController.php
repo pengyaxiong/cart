@@ -30,6 +30,33 @@ class IndexController extends Controller
         return $res;
     }
 
+    public function code_login()
+    {
+        //1.准备scope为snsapi_login网页授权页面
+        $redirecturl = urlencode("https://cart.leanzn.com/wechat/code_login");
+        $snsapi_userInfo_url = 'https://open.weixin.qq.com/connect/qrconnect?appid=wxff7d69201c42b292&redirect_uri='.$redirecturl.'&response_type=code&scope=snsapi_login&state=YQJ#wechat_redirect';
+        //2.用户手动同意授权,同意之后,获取code
+        //页面跳转至redirect_uri/?code=CODE&state=STATE
+        $code = $_GET['code'];
+        if( !isset($code) ){
+            header('Location:'.$snsapi_userInfo_url);
+        }
+
+        //3.通过code换取网页授权access_token
+        $curl = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxff7d69201c42b292&secret=e501916d34a9d52e7556acf00ba704d4&code='.$code.'&grant_type=authorization_code';
+        $content = $this->doHttpPost($curl);
+        $result = json_decode($content);
+
+        //4.通过access_token和openid拉取用户信息
+        $webAccess_token = $result->access_token;
+        $openid = $result->openid;
+        $userInfourl = 'https://api.weixin.qq.com/sns/userinfo?access_token='.$webAccess_token.'&openid='.$openid.'&lang=zh_CN ';
+
+        $recontent = $this->doHttpPost($userInfourl);
+        $userInfo = json_decode($recontent,true);
+        return $userInfo;
+
+    }
 
     public function auth(Request $request)
     {
@@ -39,18 +66,18 @@ class IndexController extends Controller
 //配置appid
         $appid = env('WECHAT_MINI_PROGRAM_APPID', 'wxff7d69201c42b292');
 //配置appscret
-        $secret = env('WECHAT_MINI_PROGRAM_SECRET', '52e8d624676307556679979dfb57c76d');
+        $secret = env('WECHAT_MINI_PROGRAM_SECRET', 'e501916d34a9d52e7556acf00ba704d4');
 //api接口
         $api = "https://api.weixin.qq.com/sns/jscode2session?appid={$appid}&secret={$secret}&js_code={$code}&grant_type=authorization_code";
 
         $str = json_decode($this->httpGet($api), true);
-        
+
 
         $openid = $str['openid'];
 
         $customer = Customer::where('openid', $openid)->first();
 
-        
+
         if ($customer) {
             $customer->update([
                 'openid' => $openid,
@@ -72,7 +99,7 @@ class IndexController extends Controller
 
     public function config()
     {
-        $config=Config::first();
+        $config = Config::first();
         return success_data('系统设置', ['config' => $config]);
     }
 
@@ -92,8 +119,8 @@ class IndexController extends Controller
             return success_data('上传成功', ['image' => '' . $path, 'image_url' => '' . $path]);
         }
     }
-    
-      public function upload_ocr(Request $request)
+
+    public function upload_ocr(Request $request)
     {
         if ($request->hasFile('file') and $request->file('file')->isValid()) {
 

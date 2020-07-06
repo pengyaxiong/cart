@@ -1,8 +1,11 @@
 <?php
 
 
+//二维码登录
+Route::get('/code_login','IndexController@code_login');
 //授权
 Route::post('/auth', 'IndexController@auth');
+
 
 //搜索
 Route::get('/search', 'ProductController@search');
